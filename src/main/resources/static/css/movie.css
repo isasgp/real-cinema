@@ -1,0 +1,363 @@
+@charset "UTF-8";
+
+/* Nanum 폰트 가져오기 */
+@import url('http://fonts.googleapis.com/earlyaccess/nanumgothic.css');
+@import url('http://cdn.jsdelivr.net/font-nanum/1.0/nanumbarungothic/nanumbarungothic.css');
+
+/* 기본 초기화 */
+html, body, div, h1, h2, h3, p, ul, li, a, form, table, caption, thead, tbody, tr, th, td, input, textarea, button {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    vertical-align: baseline;
+    background: transparent;
+    font-size: 100%;
+    font-family: 'NanumGothic','나눔고딕',dotum, "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+/* 전체 배경, 기본 폰트 설정 */
+body {
+    background: #f4f4f4;
+    font-size: 0.875em;
+    line-height: 1.5;
+    color: #333;
+    min-width: 320px;
+}
+
+a {
+    text-decoration: none;
+    color: #444;
+}
+a:hover {
+    color: #000;
+    text-decoration: underline;
+}
+
+/* 컨테이너 */
+.container {
+    max-width: 1080px;
+    margin: 40px auto;
+    padding: 20px;
+    background: #fff;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+    border-radius: 8px;
+}
+
+/* 제목(h2) */
+h2 {
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    color: #222;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* 공통 테이블 스타일 */
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background-color: #fff;
+    table-layout: auto;
+}
+th, td {
+    padding: 12px 16px;
+    border: 1px solid #ddd;
+    vertical-align: middle;
+    text-align: center;
+    font-size: 0.95em;
+}
+th {
+    background: #f7f7f7;
+    font-weight: 600;
+    color: #555;
+}
+
+/* 영화 상세 테이블 */
+.movie_detail {
+    border: none;
+    margin-bottom: 25px;
+}
+.movie_detail th {
+    background-color: #fafafa;
+    color: #333;
+    width: 120px;
+    font-weight: 600;
+}
+/* 짝수행 줄무늬 제거 */
+.movie_detail tr:nth-child(even) td {
+    background-color: #fff !important;
+}
+
+/* 댓글 영역 */
+.comments {
+    margin-top: 40px;
+}
+.comments h3 {
+    margin-bottom: 15px;
+    font-size: 1.3em;
+    font-weight: 700;
+    color: #333;
+    border-bottom: 2px solid #ddd;
+    padding-bottom: 5px;
+}
+
+/* 댓글 목록 테이블 */
+.comments table {
+    margin-top: 10px;
+    border: 1px solid #ddd;
+}
+
+/* colgroup 예시: nth-child(1) = 10%, ... */
+.comments table col:nth-child(1) { width: 10%; }
+.comments table col:nth-child(2) { width: 40%; }
+.comments table col:nth-child(3) { width: 10%; }
+.comments table col:nth-child(4) { width: 10%; }
+.comments table col:nth-child(5) { width: 15%; }
+.comments table col:nth-child(6) { width: 7%;  }
+.comments table col:nth-child(7) { width: 8%;  }
+.comments table col:nth-child(8) { width: 8%;  }
+
+.comments thead th {
+    background-color: #f3f3f3;
+    font-weight: 600;
+}
+.comments tbody tr:hover {
+    background: #fefefe;
+}
+
+/* 댓글 작성 폼 */
+.comments form {
+    display: flex;
+    flex-direction: column;
+    margin-top: 15px;
+    gap: 8px;
+}
+.comments form input[type="text"],
+.comments form input[type="password"],
+.comments form select,
+.comments form textarea {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    font-size: 0.9em;
+}
+.comments form textarea {
+    min-height: 80px;
+    resize: vertical;
+}
+.comments form button[type="submit"] {
+    align-self: flex-start;
+    padding: 10px 20px;
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px;
+    font-size: 0.9em;
+    transition: background 0.2s ease;
+}
+.comments form button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+.like-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* 중앙 정렬 */
+}
+.like-count,
+.rating-score {
+    font-weight: bold;
+}
+/* 공통 버튼 스타일 */
+.btn {
+    display: inline-block;
+    margin: 5px 0;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    color: #fff !important;
+    background-color: #7D7F82;
+    cursor: pointer;
+    font-size: 0.9em;
+    transition: background 0.2s ease;
+}
+.btn:hover {
+    background-color: #6b9ab8;
+}
+
+/* 좋아요/수정/삭제 버튼 */
+.like-btn,
+.update-btn,
+.delete-btn,
+.view-ticket-btn,
+.ticket-btn {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    color: #333;
+    padding: 6px 10px;
+    margin: 0 3px;
+    font-size: 0.875em;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background 0.2s ease;
+}
+.like-btn:hover,
+.update-btn:hover,
+.delete-btn:hover,
+.view-ticket-btn:hover,
+.ticket-btn:hover {
+    background-color: #eee;
+    border-color: #999;
+}
+
+/* 모달(수정/삭제) 스타일 */
+
+#updateModal,
+#deleteModal,
+#ticketModal,
+#viewTicketModal{
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 420px;
+    max-width: 90%;
+    background: #fff;
+    border: 1px solid #ccc;
+    z-index: 9999;
+    padding: 20px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    border-radius: 6px;
+}
+#updateModal h4,
+#deleteModal h4,
+#ticketModal h4,
+#viewTicketModal h4{
+    margin-bottom: 15px;
+    font-size: 1.2em;
+    color: #333;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 5px;
+}
+#updateModal form,
+#deleteModal form,
+#ticketModal form {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+#updateModal form textarea {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.9em;
+    min-height: 80px;
+    max-height: 250px;
+    resize: vertical;
+}
+#deleteModal form input[type="password"],
+#updateModal form input[type="password"],
+#updateModal form select,
+#ticketModal form input[type="password"],
+#ticketModal form input[type="file"] {
+    padding: 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 0.9em;
+}
+
+/* 모달 안 버튼 */
+#updateModal form button,
+#deleteModal form button,
+#ticketModal form button,
+#viewTicketModal button{
+    width: 100%; /* 버튼을 모달 내부에서 꽉 차게 설정 */
+    padding: 15px 20px; /* 클릭하기 좋게 패딩 추가 */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background 0.2s ease;
+}
+
+/* 주 버튼 (수정, 삭제, OCR 검증, 완료 등) */
+#ticketModal form button[type="submit"],
+#updateModal form button[type="submit"],
+#deleteModal form button[type="submit"],
+#viewTicketModal button,
+.submit-btn {
+    background-color: #007bff !important;
+    color: #fff !important;
+}
+#ticketModal form button[type="submit"]:hover,
+#updateModal form button[type="submit"]:hover,
+#deleteModal form button[type="submit"]:hover,
+#viewTicketModal button:hover,
+.submit-btn:hover {
+    background-color: #0056b3 !important;
+}
+
+/* ticketModal form button[type="button"] => 검증/완료등에 .btn 쓰면 동일 */
+#ticketModal form .btn {
+    background-color: #007bff !important;
+    color: #fff !important;
+}
+#ticketModal form .btn:hover {
+    background-color: #0056b3 !important;
+}
+
+/* 취소, 재업로드 같은 보조 버튼 */
+#updateModal form button[type="button"],
+#deleteModal form button[type="button"],
+#ticketModal form button[type="button"] {
+    background-color: #ccc;
+    color: #333;
+}
+#updateModal form button[type="button"]:hover,
+#deleteModal form button[type="button"]:hover,
+#ticketModal form button[type="button"]:hover {
+    background-color: #bbb;
+}
+
+/* 숨김(모달 비활성) 처리 */
+#updateModal[style*="display: none;"],
+#deleteModal[style*="display: none;"],
+#ticketModal[style*="display: none;"],
+#viewTicketModal[style*="display: none;"]
+{
+    display: none !important;
+}
+
+#ticketStatus {
+    font-weight: bold;
+    font-size: 1.4em;
+}
+
+/* 영화/포스터 래퍼 */
+.movie-wrapper {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    margin-bottom: 30px;
+}
+.movie-info {
+    flex: 1;
+}
+.movie-poster {
+    width: 300px;
+    text-align: center;
+}
+.poster-img {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}
+.ticket-img {
+    max-width: 100%;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    margin-bottom: 10px;
+}

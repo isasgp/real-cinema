@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns="http://www.w3.org/1999/html">
+<head>
+    <meta charset="UTF-8">
+    <title>영화 정보</title>
+    <link rel="stylesheet" th:href="@{/css/movie.css}" />
+</head>
+<body>
+<div class="container">
+    <h2>영화 상세 정보</h2>
+
+    <div class="movie-wrapper">
+        <div class="movie-info">
+            <form id="frm" method="post">
+                <table class="movie_detail">
+                    <colgroup>
+                        <col width="15%"/>
+                        <col width="35%"/>
+                        <col width="15%"/>
+                        <col width="35%"/>
+                    </colgroup>
+                    <tbody>
+                    <tr>
+                        <th>영화 순위</th>
+                        <td th:text="${movie.movieRank}"></td>
+                        <th>영화 제목</th>
+                        <td th:text="${movie.title}"></td>
+                    </tr>
+                    <tr>
+                        <th>감독 이름</th>
+                        <td th:text="${movie.director}"></td>
+                        <th>개봉일</th>
+                        <td th:text="${movie.releaseDate}"></td>
+                    </tr>
+                    <tr>
+                        <th>장르</th>
+                        <td th:text="${movie.genre}"></td>
+                        <th>평점</th>
+                        <td th:if="${movie.rating != null}"
+                            th:text="${movie.rating}"></td>
+                        <td th:if="${movie.rating == null}">등록된 평점이 없습니다.</td>
+                    </tr>
+                    <tr>
+                        <th>누적 관객수</th>
+                        <td th:text="${#numbers.formatInteger(movie.totalAudienceCount, 3, 'COMMA') + ' 명'}"></td>
+                        <th>실관람객<br>평점</th>
+                        <td th:if="${movie.audienceRating != null}"
+                            th:text="${movie.audienceRating}"></td>
+                        <td th:if="${movie.audienceRating == null}">등록된 평점이 없습니다.</td>
+                    </tr>
+                    <tr>
+                        <th>영화 설명</th>
+                        <td colspan="3" th:text="${movie.description}"></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+
+        <div class="movie-poster">
+            <img th:if="${poster != null and poster.posterUrl != null}"
+                 th:src="${poster.posterUrl}"
+                 alt="영화 포스터"
+                 class="poster-img"/>
+            <div th:if="${poster == null or poster.posterUrl == null}">
+                포스터 이미지를 준비 중입니다.
+            </div>
+        </div>
+    </div>
+
+    <div class="comments">
+        <h3>영화평</h3>
+        <table>
+            <colgroup>
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+                <col />
+            </colgroup>
+            <thead>
+            <tr>
+                <th>닉네임</th>
+                <th>영화평</th>
+                <th>좋아요</th>
+                <th>평점</th>
+                <th>작성일</th>
+                <th>실관람객</th>
+                <th>수정</th>
+                <th>삭제</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="comment : ${comments}">
+                <td th:text="${comment.nickname}"></td>
+                <td th:text="${comment.comment}"></td>
+                <td>
+                    <div class="like-container">
+                        <span th:text="${comment.likesCount}" class="like-count"></span>
+                        <button type="button" class="like-btn" th:attr="data-id=${comment.commentId}">❤️</button>
+                    </div>
+                </td>
+                <td th:text="${comment.rating}" class="rating-score"></td>
+                <td th:text="${#temporals.format(comment.createdAt, 'yyyy-MM-dd')}"></td>
+                <td>
+                    <span th:if="${comment.isAudience} == 'Y'">
+                        <button type="button"
+                                class="view-ticket-btn"
+                                th:attr="data-comment-id=${comment.commentId},
+                                 data-ticket-url=@{/movie/showTicketImage.do(filename=${comment.ticketUrl})}">
+                            ✅
+                        </button>
+                    </span>
+                    <span th:if="${comment.isAudience} == 'N'">
+                        <button type="button"
+                                class="ticket-btn"
+                                th:attr="data-comment-id=${comment.commentId}">
+                            ❌
+                        </button>
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="update-btn"
+                            th:attr="data-comment-id=${comment.commentId},
+                             data-comment=${comment.comment},
+                             data-rating=${comment.rating}">
+                        ✏️
+                    </button>
+                </td>
+                <td>
+                    <button type="button" class="delete-btn" th:attr="data-comment-id=${comment.commentId}">
+                        🗑️
+                    </button>
+                </td>
+            </tr>
+            <tr th:if="${#lists.isEmpty(comments)}">
+                <td colspan="8">영화평이 없습니다.</td>
+            </tr>
+            </tbody>
+        </table>
+
+        <!-- 댓글 작성 폼 -->
+        <form method="post" action="/movie/insertComment.do">
+            <input type="hidden" name="movieId" th:value="${movie.movieId}" />
+
+            <input type="text" name="nickname" placeholder="닉네임" required />
+            <input type="password" name="password" placeholder="비밀번호 (4자리)" required />
+
+            <select name="rating" required>
+                <option value="">-- 평점 선택 --</option>
+                <option th:each="r : ${#numbers.sequence(1,10)}"
+                        th:value="${r}"
+                        th:text="${r}">1</option>
+            </select>
+
+            <textarea name="comment" placeholder="영화평을 입력하세요" required></textarea>
+
+
+            <button type="submit">댓글 등록</button>
+        </form>
+    </div>
+
+    <!-- 댓글 수정 모달 -->
+    <div id="updateModal" style="display: none;">
+        <h4>영화평 수정</h4>
+        <form method="post" th:action="@{/movie/updateComment.do}">
+            <input type="hidden" name="commentId" id="updateCommentId" />
+            <input type="hidden" name="movieId" th:value="${movie.movieId}" />
+
+            <!-- 평점도 함께 수정할 수 있도록 select 추가 -->
+            <label for="updateRating">평점</label>
+            <select name="rating" id="updateRating" required>
+                <option value="">-- 평점 선택 --</option>
+                <option th:each="r : ${#numbers.sequence(1,10)}"
+                        th:value="${r}"
+                        th:text="${r}">1</option>
+            </select>
+
+            <label for="updateComment">댓글</label>
+            <textarea name="comment" id="updateComment" required></textarea>
+
+            <label for="updatePassword">비밀번호</label>
+            <input type="password" name="password" id="updatePassword" placeholder="비밀번호" required />
+
+            <button type="submit">수정</button>
+            <button type="button" onclick="closeUpdateModal()">취소</button>
+        </form>
+    </div>
+
+    <!-- 댓글 삭제 모달 -->
+    <div id="deleteModal" style="display: none;">
+        <h4>영화평 삭제</h4>
+        <form method="post" th:action="@{/movie/deleteComment.do}">
+            <input type="hidden" name="commentId" id="deleteCommentId" />
+            <input type="hidden" name="movieId" th:value="${movie.movieId}" />
+
+            <label for="deletePassword">비밀번호</label>
+            <input type="password" name="password" id="deletePassword" placeholder="비밀번호" required />
+
+            <button type="submit">삭제</button>
+            <button type="button" onclick="closeDeleteModal()">취소</button>
+        </form>
+    </div>
+
+    <!-- 좋아요를 위한 숨김 폼 (document.getElementById('hiddenCommentId') 오류 방지) -->
+    <form id="likeForm" method="post" th:action="@{/movie/likeComment.do}" style="display: none;">
+        <input type="hidden" name="commentId" id="hiddenCommentId" />
+        <input type="hidden" name="movieId" th:value="${movie.movieId}" />
+    </form>
+
+    <!-- 티켓 인증 모달 -->
+    <div id="ticketModal" style="display: none;">
+        <h4>실관람객 인증</h4>
+        <form method="post" th:action="@{/movie/insertMovieTicket.do}" enctype="multipart/form-data">
+            <input type="hidden" name="commentId" id="ticketCommentId" />
+            <input type="hidden" name="movieId" th:value="${movie.movieId}" />
+            <label for="ticketFile">티켓 사진 업로드</label>
+            <input type="file" name="ticketFile" id="ticketFile" accept="image/*" />
+
+            <button type="button" class="submit-btn" onclick="verifyMovieTicket()">인증</button>
+
+            <div style="margin-top:10px;">
+                <label>인증 상태:</label>
+                <span id="ticketStatus">X</span>
+            </div>
+
+            <input type="hidden" name="isAudience" id="isAudience" value='N'>
+
+            <span id="reUploadText" style="display:none;">인증 실패! 재업로드 후 인증 버튼을 누르세요</span>
+
+            <label for="ticketPassword">비밀번호</label>
+            <input type="password" name="password" id="ticketPassword" placeholder="비밀번호" required />
+
+            <button type="submit" id="completeButton" disabled>완료</button>
+            <button type="button" onclick="closeTicketModal()">취소</button>
+        </form>
+    </div>
+
+    <!-- 티켓 보기 모달  -->
+    <div id="viewTicketModal" style="display: none;">
+        <h4>티켓 인증 이미지</h4>
+        <div class="ticket-view-area">
+            <!-- 이미지는 JS로 src를 세팅, 여기선 초기값 X -->
+            <img id="viewTicketImg"
+                 src=""
+                 alt="티켓 이미지"
+                 class="ticket-img"/>
+        </div>
+        <button type="button" onclick="closeViewTicketModal()">닫기</button>
+    </div>
+
+    <script>
+        // (1) 수정/삭제 버튼 모달 제어
+        document.addEventListener('DOMContentLoaded', () => {
+            // 수정 버튼 클릭 이벤트
+            document.querySelectorAll('.update-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const commentId = this.dataset.commentId;   // data-comment-id
+                    const comment   = this.dataset.comment;     // data-comment
+                    const rating    = this.dataset.rating;      // data-rating
+
+                    openUpdateModal(commentId, comment, rating);
+                });
+            });
+
+            // 삭제 버튼 클릭 이벤트
+            document.querySelectorAll('.delete-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const commentId = this.dataset.commentId;   // data-comment-id
+                    openDeleteModal(commentId);
+                });
+            });
+
+            // 좋아요 버튼 클릭 이벤트
+            document.querySelectorAll('.like-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const cid = this.getAttribute('data-id');
+                    // hidden input에 세팅 후 폼 전송
+                    document.getElementById('hiddenCommentId').value = cid;
+                    document.getElementById('likeForm').submit();
+                });
+            });
+
+            document.querySelectorAll('.ticket-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const commentId = this.dataset.commentId;
+                    openTicketModal(commentId);
+                });
+            });
+
+            document.querySelectorAll('.view-ticket-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    const ticketUrl = this.dataset.ticketUrl;
+                    openViewTicketModal(ticketUrl);
+                });
+            });
+        });
+
+
+
+        function openUpdateModal(commentId, comment, rating) {
+            // 모달 폼에 값 설정
+            document.getElementById('updateCommentId').value = commentId;
+            document.getElementById('updateComment').value   = comment;
+            document.getElementById('updateRating').value    = rating; // 평점 select 설정
+            document.getElementById('updateModal').style.display = 'block';
+        }
+        function closeUpdateModal() {
+            document.getElementById('updateModal').style.display = 'none';
+        }
+
+        function openDeleteModal(commentId) {
+            document.getElementById('deleteCommentId').value = commentId;
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+        function openTicketModal(commentId) {
+            // 코멘트 ID 세팅
+            document.getElementById('ticketCommentId').value = commentId;
+            // 상태 초기화
+            document.getElementById('ticketStatus').innerText = 'X'; // 처음엔 X
+            document.getElementById('reUploadText').style.display = 'none'; // 재업로드 텍스트 숨김
+            // modal 열기
+            document.getElementById('ticketModal').style.display = 'block';
+        }
+        function closeTicketModal() {
+            document.getElementById('ticketModal').style.display = 'none';
+        }
+        function openViewTicketModal(ticketUrl) {
+            const img = document.getElementById('viewTicketImg');
+            img.src = ticketUrl;
+
+            document.getElementById('viewTicketModal').style.display = 'block';
+        }
+
+        function closeViewTicketModal() {
+            document.getElementById('viewTicketModal').style.display = 'none';
+        }
+
+        function verifyMovieTicket() {
+            let formData = new FormData();
+            formData.append("commentId", document.getElementById("ticketCommentId").value);
+            formData.append("movieId", document.querySelector("input[name='movieId']").value);
+            formData.append("ticketFile", document.getElementById("ticketFile").files[0]);
+
+            // 로딩 표시
+            document.getElementById("ticketStatus").innerText = "🔄 인증 중..";
+            document.getElementById("completeButton").disabled = true; // 인증 중에는 "완료" 버튼 비활성화
+
+            fetch("/movie/verifyMovieTicket.do", {
+                method: "POST",
+                body: formData
+            })
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById("ticketStatus").innerText = data; // 인증 결과 업데이트
+
+                    if (data.includes("✅ 인증 완료")) {
+                        document.getElementById("isAudience").value = "Y"; // 인증 성공 시 값 변경
+                        document.getElementById("completeButton").disabled = false; // ✅ "완료" 버튼 활성화
+                    } else {
+                        document.getElementById("reUploadText").style.display = "block"; // 실패 메시지 표시
+                        document.getElementById("completeButton").disabled = true; // ❌ "완료" 버튼 비활성화 유지
+                    }
+                })
+                .catch(error => {
+                    console.error("인증 요청 실패:", error);
+                    document.getElementById("ticketStatus").innerText = "❌ 서버 오류 발생";
+                    document.getElementById("completeButton").disabled = true; // 서버 오류 시 버튼 비활성화 유지
+                });
+        }
+
+        document.querySelector("#ticketForm").addEventListener("submit", function(event) {
+            if (document.getElementById("isAudience").value !== "Y") {
+                event.preventDefault();  // 폼 제출 방지
+            }
+        });
+
+    </script>
+    <script th:if="${#strings.trim(param.error)} == 'alreadyLiked'">
+        alert('좋아요를 이미 누르셨습니다.');
+    </script>
+</div>
+</body>
+</html>
