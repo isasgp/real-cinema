@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="movie.mapper.MovieMapper">
+    <select id="selectMovieList" resultType="movie.dto.MovieDto">
+        SELECT movie_id, movie_rank, title, director, release_date, (SELECT ROUND(AVG(c.rating), 1) FROM movie_comments c WHERE c.movie_id = m.movie_id AND c.rating > 0 ) AS rating, (SELECT ROUND(AVG(c.rating),1) FROM movie_comments c WHERE c.movie_id = m.movie_id AND c.rating > 0 AND c.is_audience='Y') AS audience_rating
+        FROM movies m
+        ORDER BY movie_rank ASC ;
+    </select>
+
+    <insert id="insertMovie" parameterType="movie.dto.MovieDto">
+        INSERT INTO movies(movie_id, movie_rank, title, director, release_date, genre, description, created_at)
+        VALUES (#{movieId}, #{movieRank}, #{title}, #{director}, #{releaseDate}, #{genre}, #{description}, NOW())
+    </insert>
+
+    <update id="updateAllMovieRankToNull">
+        UPDATE movies
+        SET movie_rank = NULL
+    </update>
+
+    <update id="updateMovieRankAndAudience" parameterType="movie.dto.MovieDto">
+        UPDATE movies
+        SET movie_rank = #{movieRank},
+            total_audience_count = #{totalAudienceCount},
+            updated_at = NOW()
+        WHERE movie_id = #{movieId}
+    </update>
+
+    <insert id="insertMoviePoster" parameterType="movie.dto.MoviePosterDto" useGeneratedKeys="true" keyProperty="posterId">
+        INSERT INTO movie_posters (movie_id, poster_url, created_at)
+        VALUES (#{movieId}, #{posterUrl}, NOW())
+    </insert>
+
+    <select id="selectPosterByMovieId" parameterType="Long" resultType="movie.dto.MoviePosterDto">
+        SELECT poster_id, movie_id, poster_url, created_at
+        FROM movie_posters
+        WHERE movie_id = #{movieId}
+            LIMIT 1
+    </select>
+
+    <select id="selectMovieDetail" parameterType="Long" resultType="movie.dto.MovieDto">
+        SELECT movie_id, movie_rank, title, director, release_date, genre, description, created_at, total_audience_count, (SELECT ROUND(AVG(c.rating), 1) FROM movie_comments c WHERE c.movie_id = m.movie_id AND c.rating > 0 ) AS rating, (SELECT ROUND(AVG(c.rating),1) FROM movie_comments c WHERE c.movie_id = m.movie_id AND c.rating > 0 AND c.is_audience='Y') AS audience_rating
+        FROM movies m
+        WHERE movie_id = #{movieId}
+    </select>
+
+    <select id="selectCommentsByMovieId" parameterType="Long" resultType="movie.dto.CommentDto">
+        SELECT comment_id, movie_id, nickname, comment, likes_count, created_at, rating, is_audience
+        FROM movie_comments c
+        WHERE movie_id = #{movieId}
+        ORDER BY likes_count DESC, created_at ASC
+    </select>
+
+    <insert id="insertComment" parameterType="movie.dto.CommentDto" useGeneratedKeys="true" keyProperty="commentId">
+        INSERT INTO movie_comments (movie_id, nickname, password, comment, rating, created_at)
+        VALUES (#{movieId}, #{nickname}, #{password}, #{comment}, #{rating}, NOW())
+    </insert>
+
+    <update id="updateComment" parameterType="movie.dto.CommentDto">
+        UPDATE movie_comments
+        SET comment = #{comment}, rating = #{rating}, updated_at = NOW()
+        WHERE comment_id = #{commentId}
+          AND password = #{password}
+    </update>
+
+    <delete id="deleteComment" parameterType="movie.dto.CommentDto">
+        DELETE FROM movie_comments
+        WHERE comment_id = #{commentId}
+          AND password = #{password}
+    </delete>
+
+    <update id="increaseLikesCount" parameterType="Long">
+        UPDATE movie_comments
+        SET likes_count = likes_count + 1
+        WHERE comment_id = #{commentId}
+    </update>
+
+    <insert id="insertCommentLikes" parameterType="movie.dto.CommentLikesDto" useGeneratedKeys="true" keyProperty="likeId">
+        INSERT INTO comment_likes (comment_id, user_ip, created_at)
+        VALUES (#{commentId}, #{userIp}, NOW())
+    </insert>
+
+    <update id="updateToAudience" parameterType="movie.dto.CommentDto">
+        UPDATE movie_comments
+        SET is_audience = #{isAudience}
+        WHERE comment_id = #{commentId}
+          AND password = #{password}
+    </update>
+
+    <insert id="insertMovieTicket" parameterType="movie.dto.MovieTicketDto" useGeneratedKeys="true" keyProperty="ticketId">
+        <foreach collection="list" item="item" separator=";">
+            INSERT INTO movie_tickets (comment_id, ticket_url, created_at)
+            VALUES (#{item.commentId}, #{item.ticketUrl}, NOW())
+        </foreach>
+    </insert>
+
+    <select id="selectMovieTicketByCommentId" parameterType="Long" resultType="movie.dto.MovieTicketDto">
+        SELECT ticket_id, comment_id, ticket_url, created_at
+        FROM movie_tickets
+        WHERE comment_id = #{commentId}
+            LIMIT 1
+    </select>
+
+    <select id="selectMovieSearchTitle" parameterType="Long" resultType="String">
+        SELECT m.search_title
+        FROM movies m, movie_comments c
+        WHERE m.movie_id = c.movie_id
+          AND c.comment_id = #{commentId}
+            LIMIT 1
+    </select>
+</mapper>
